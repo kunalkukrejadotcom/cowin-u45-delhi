@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimerTask;
 
 import open.cowin.api.CowinAPI;
 import open.cowin.api.TelegramAPI;
@@ -12,59 +13,70 @@ import open.cowin.api.models.Session;
 import open.cowin.api.models.TelegramResponse;
 
 
-public class App {
+public class App extends TimerTask  {
 
-	private static final int districtBegin = 1;
-	private static final int districtEnd = 199;
+	private static final int districtBegin = 140;
+	private static final int districtEnd = 150;
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 	
 	private static final String cseChatId = "-1001476781242";
+	private static CowinAPI cowinApi = new CowinAPI("https://cdn-api.co-vin.in");
+	private static TelegramAPI telegramApi = new TelegramAPI("https://api.telegram.org");
+	//"1344228213"; // this is personal chat
 	
-	//"1344228213"; //
+	private String lastSentMessage;
 	
-	public static void main(String[] args) {
-		
-		CowinAPI cowinApi = new CowinAPI("https://cdn-api.co-vin.in");
-		TelegramAPI telegramApi = new TelegramAPI("https://api.telegram.org");
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DAY_OF_MONTH, 1);
-		
-		String date = sdf.format(cal.getTime());
-		System.out.println("Looking for date : " + date);
-		ArrayList<Center> allCenters = new ArrayList<>();
-		
+	@Override
+	public void run() {
+		try
+		{
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DAY_OF_MONTH, 1);
+			String date = sdf.format(cal.getTime());
+			System.out.println("Looking for date : " + date);
+			ArrayList<Center> allCenters = new ArrayList<>();
+			for(int i = districtBegin; i <= districtEnd; i++)
+			{
+				allCenters.addAll(cowinApi.calendarByDistrict(i, date).getCenters());
+			}
 			
-		for(int i = districtBegin; i <= districtEnd; i++)
-		{
-			allCenters.addAll(cowinApi.calendarByDistrict(i, date).getCenters());
+			System.out.println("total number of centers : " + allCenters.size());
+			
+			if(allCenters.isEmpty())
+				return;
+			
+			System.out.println("Filtering");
+			ArrayList<Center> validCenters = new ArrayList<Center>();
+			for(Center c : allCenters)
+			{
+				Center x = filter(c);
+				if(!x.getSessions().isEmpty())
+					validCenters.add(x);
+			}
+			
+			if (!validCenters.isEmpty()) {
+				System.out.println("Valid center count : " + validCenters.size());
+				String message = createTelegramMessage(validCenters);
+				if(!lastSentMessage.equals(message))
+				{
+					TelegramResponse resp = telegramApi.sendMessage(cseChatId, message);
+					int msgId = resp.getResult().getMessageId();
+					telegramApi.unpinChatMessage(cseChatId);
+					telegramApi.pinChatMessage(cseChatId, msgId);
+					lastSentMessage = message;
+				}
+				else
+				{
+					System.out.println("Same as last message. Not Sending");
+				}
+			}
 		}
-		
-		System.out.println("total number of centers : " + allCenters.size());
-		
-		if(allCenters.isEmpty())
-			return;
-		
-		System.out.println("Filtering");
-		ArrayList<Center> validCenters = new ArrayList<Center>();
-		for(Center c : allCenters)
-		{
-			Center x = filter(c);
-			if(!x.getSessions().isEmpty())
-				validCenters.add(x);
-		}
-		
-//		System.out.println(createTelegramMessage(validCenters));
-		
-		if (!validCenters.isEmpty()) {
-			System.out.println("Valid center count : " + validCenters.size());
-			TelegramResponse resp = telegramApi.sendMessage(cseChatId, createTelegramMessage(validCenters));
-			int msgId = resp.getResult().getMessageId();
-			telegramApi.unpinChatMessage(cseChatId);
-			telegramApi.pinChatMessage(cseChatId, msgId);
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
-	private static String createTelegramMessage(ArrayList<Center> validCenters) {
+	private String createTelegramMessage(ArrayList<Center> validCenters) {
 		StringBuilder sb = new StringBuilder();
 		Date date = new Date(System.currentTimeMillis());
 		sb.append("Updated on : " + date.toLocaleString());
@@ -94,7 +106,7 @@ public class App {
 		return sb.toString();
 	}
 
-	static Center filter(Center center) {
+	Center filter(Center center) {
 	
 		Center temp;
 		temp = new Center(center);
@@ -108,4 +120,5 @@ public class App {
 		}
 		return temp;
 	}
+	
 }
