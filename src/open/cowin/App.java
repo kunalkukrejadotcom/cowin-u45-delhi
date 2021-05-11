@@ -3,8 +3,9 @@ package open.cowin;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimerTask;
+
+import org.apache.log4j.Logger;
 
 import open.cowin.api.CowinAPI;
 import open.cowin.api.TelegramAPI;
@@ -15,16 +16,20 @@ import open.cowin.api.models.TelegramResponse;
 
 public class App extends TimerTask  {
 
-	private static final int districtBegin = 140;
-	private static final int districtEnd = 150;
+	private static final Logger logger = Logger.getLogger(App.class);
+	
+	private static final int DISTRICT_BEGIN = 140;
+	private static final int DISTRICT_END = 150;
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 	
-	private static final String cseChatId = "-1001476781242";
+	private static final String CSE_CHAT_ID = "-1001476781242";
 	private static CowinAPI cowinApi = new CowinAPI("https://cdn-api.co-vin.in");
 	private static TelegramAPI telegramApi = new TelegramAPI("https://api.telegram.org");
 	//"1344228213"; // this is personal chat
 	
-	private String lastSentMessage;
+	private String lastSentMessage = "";
+	
+	
 	
 	@Override
 	public void run() {
@@ -33,20 +38,20 @@ public class App extends TimerTask  {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 			String date = sdf.format(cal.getTime());
-			System.out.println("Looking for date : " + date);
+			logger.debug("Looking for date : " + date);
 			ArrayList<Center> allCenters = new ArrayList<>();
-			for(int i = districtBegin; i <= districtEnd; i++)
+			for(int i = DISTRICT_BEGIN; i <= DISTRICT_END; i++)
 			{
 				allCenters.addAll(cowinApi.calendarByDistrict(i, date).getCenters());
 			}
 			
-			System.out.println("total number of centers : " + allCenters.size());
+			logger.debug("total number of centers : " + allCenters.size());
 			
 			if(allCenters.isEmpty())
 				return;
 			
-			System.out.println("Filtering");
-			ArrayList<Center> validCenters = new ArrayList<Center>();
+			logger.debug("Filtering");
+			ArrayList<Center> validCenters = new ArrayList<>();
 			for(Center c : allCenters)
 			{
 				Center x = filter(c);
@@ -55,31 +60,30 @@ public class App extends TimerTask  {
 			}
 			
 			if (!validCenters.isEmpty()) {
-				System.out.println("Valid center count : " + validCenters.size());
+				logger.debug("Valid center count : " + validCenters.size());
 				String message = createTelegramMessage(validCenters);
 				if(!lastSentMessage.equals(message))
 				{
-					TelegramResponse resp = telegramApi.sendMessage(cseChatId, message);
+					TelegramResponse resp = telegramApi.sendMessage(CSE_CHAT_ID, message);
 					int msgId = resp.getResult().getMessageId();
-					telegramApi.unpinChatMessage(cseChatId);
-					telegramApi.pinChatMessage(cseChatId, msgId);
+					telegramApi.unpinChatMessage(CSE_CHAT_ID);
+					telegramApi.pinChatMessage(CSE_CHAT_ID, msgId);
 					lastSentMessage = message;
 				}
 				else
 				{
-					System.out.println("Same as last message. Not Sending");
+					logger.debug("Same as last message. Not Sending");
 				}
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error("App.run()");
+			logger.error(e.getMessage());
 		}
 	}
 	
 	private String createTelegramMessage(ArrayList<Center> validCenters) {
 		StringBuilder sb = new StringBuilder();
-		Date date = new Date(System.currentTimeMillis());
-		sb.append("Updated on : " + date.toLocaleString());
 		for(Center c : validCenters)
 		{
 			sb.append("\n");
