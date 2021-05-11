@@ -22,6 +22,7 @@ public class CowinAPI extends API implements CowinInterface{
 								  .get();
 
 		String responseStr = response.readEntity(String.class);
+		logger.debug(responseStr);
 		return gson.fromJson(responseStr, Centers.class);
 
 	}

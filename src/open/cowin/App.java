@@ -12,6 +12,7 @@ import open.cowin.api.TelegramAPI;
 import open.cowin.models.Center;
 import open.cowin.models.Session;
 import open.cowin.models.TelegramResponse;
+import open.cowin.util.AppUtil;
 
 
 public class App extends TimerTask  {
@@ -82,7 +83,7 @@ public class App extends TimerTask  {
 		}
 		catch (Exception e) {
 			logger.error("App.run()");
-			logger.error(e.getMessage());
+			logger.error(AppUtil.exception2String(e));
 		}
 	}
 	
