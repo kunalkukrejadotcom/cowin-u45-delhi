@@ -9,9 +9,9 @@ import org.apache.log4j.Logger;
 
 import open.cowin.api.CowinAPI;
 import open.cowin.api.TelegramAPI;
-import open.cowin.api.models.Center;
-import open.cowin.api.models.Session;
-import open.cowin.api.models.TelegramResponse;
+import open.cowin.models.Center;
+import open.cowin.models.Session;
+import open.cowin.models.TelegramResponse;
 
 
 public class App extends TimerTask  {
@@ -74,6 +74,10 @@ public class App extends TimerTask  {
 				{
 					logger.debug("Same as last message. Not Sending");
 				}
+			}
+			else
+			{
+				logger.debug("No Valid centers Found. not sending");
 			}
 		}
 		catch (Exception e) {

@@ -1,1 +1,1 @@
-worker: java $JAVA_OPTS -cp target/classes:target/dependency/* open.cowin.AppScheduler
+worker: sh target/bin/worker

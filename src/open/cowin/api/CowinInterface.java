@@ -1,6 +1,6 @@
 package open.cowin.api;
 
-import open.cowin.api.models.Centers;
+import open.cowin.models.Centers;
 
 public interface CowinInterface {
 

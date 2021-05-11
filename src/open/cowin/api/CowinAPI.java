@@ -3,7 +3,7 @@ package open.cowin.api;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 
-import open.cowin.api.models.Centers;
+import open.cowin.models.Centers;
 
 public class CowinAPI extends API implements CowinInterface{
 

@@ -1,6 +1,6 @@
 package open.cowin.api;
 
-import open.cowin.api.models.TelegramResponse;
+import open.cowin.models.TelegramResponse;
 
 public interface TelegramInterface {
 	

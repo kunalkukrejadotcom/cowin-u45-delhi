@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
-import open.cowin.api.models.TelegramResponse;
+import open.cowin.models.TelegramResponse;
 
 public class TelegramAPI extends API implements TelegramInterface {
 

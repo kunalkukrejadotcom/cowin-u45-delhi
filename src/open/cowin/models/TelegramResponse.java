@@ -1,4 +1,4 @@
-package open.cowin.api.models;
+package open.cowin.models;
 
 import lombok.Getter;
 import lombok.Setter;
