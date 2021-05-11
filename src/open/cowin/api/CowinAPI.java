@@ -1,6 +1,7 @@
 package open.cowin.api;
 
 import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import open.cowin.models.Centers;
@@ -17,10 +18,12 @@ public class CowinAPI extends API implements CowinInterface{
 								  .queryParam("district_id", Integer.toString(districtId))
 								  .queryParam("date", date)
 								  .request()
-								  .header("User-Agent", "Postman")
-								  .cacheControl(CacheControl.valueOf("No Cache"))
+//								  .header("authority", "cdn-api.co-vin.in")
+//								  .header("User-Agent", "Chrome/90.0.4430.93")
+//								  .accept(MediaType.APPLICATION_JSON)
+								  .cacheControl(CacheControl.valueOf("no-cache"))
 								  .get();
-
+		logger.debug(response.getHeaders());
 		String responseStr = response.readEntity(String.class);
 		logger.debug(responseStr);
 		return gson.fromJson(responseStr, Centers.class);

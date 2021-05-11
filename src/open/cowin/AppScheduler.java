@@ -12,7 +12,7 @@ public class AppScheduler {
 	public static void main(String args[]) {
 		TimerTask timerTask = new App();
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(timerTask, 0, 60*1000);
+        timer.schedule(timerTask, 0, 20*1000);
         logger.debug("Logger init");
         logger.debug("TimerTask started");
     }

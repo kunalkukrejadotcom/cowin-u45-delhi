@@ -36,7 +36,7 @@ public class TelegramAPI extends API implements TelegramInterface {
 								  .get();
 
 		String responseStr = response.readEntity(String.class);
-		logger.debug(responseStr);
+//		logger.debug(responseStr);
 		return gson.fromJson(responseStr, TelegramResponse.class);
 	}
 
